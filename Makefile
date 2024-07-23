@@ -16,10 +16,10 @@ OBJECTS = $(SOURCES:.s=.o)
 NASM = nasm
 NASMFLAGS = -f macho64
 
+CC = gcc
+
 ifeq ($(shell uname -m), arm64)
-	CC = gcc -ld_classic --target=x86_64-apple-darwin
-else
-	CC = gcc
+	CC += -ld_classic --target=x86_64-apple-darwin
 endif
 
 CFLAGS = -Wall -Wextra -Werror
