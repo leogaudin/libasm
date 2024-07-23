@@ -58,9 +58,42 @@ void	test_strcpy(void)
 	}
 }
 
+void	test_strcmp(void)
+{
+	printf(BOLD "\nTesting ft_strcmp\n" NC);
+
+	char	*strings1[] = {
+		"test123456770797",
+		"1",
+		"test",
+		"",
+		"zzzzzzzz",
+	};
+
+	char	*strings2[] = {
+		"test1234567",
+		"2",
+		"test2",
+		"",
+		"zzzz1zzz",
+	};
+
+	int	numStrings = sizeof(strings1) / sizeof(strings1[0]);
+
+	for (int i = 0; i < numStrings; i++) {
+		int	expected = strcmp(strings1[i], strings2[i]);
+		int	result = ft_strcmp(strings1[i], strings2[i]);
+
+		printf(BOLD "%s" NC " vs "BOLD "%s" NC"\n", strings1[i], strings2[i]);
+		printf(expected == result ? GREEN "OK" NC : RED "KO" NC);
+		printf("\t Expected: %d\tResult: %d\n\n", expected, result);
+	}
+}
+
 int	main(void)
 {
 	test_strlen();
 	test_strcpy();
+	test_strcmp();
 	return (0);
 }

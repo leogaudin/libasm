@@ -15,6 +15,8 @@ ifeq ($(shell uname -m), arm64)
 endif
 ```
 
+Instead of rewriting all the assembly code for ARM64 architecture, we basically compile our C code in `x86_64` architecture as it can be executed through Rosetta 2.
+
 > Don't forget the `-f macho64` flag after your `nasm` command when compiling on Macs.
 
 ## Prerequisites and basic concepts
@@ -347,3 +349,54 @@ ret
 ```
 
 ## ft_strcmp
+
+The `ft_strcmp` function is a function that compares two strings, and returns the difference between the first two different characters. For example, "abc" and "abd" would return -1, as 'c' - 'd' = -1.
+
+Its logic is **not much more complex** than the previous functions, but **the particularities of assembly make it a bit more challenging** (for me at least, maybe I have a shitty logic).
+
+Let's recap the behavior of the function anyway:
+1. Set a counter to 0.
+2. Compare every character of the first string with every character of the second string.
+3. If they are different, substract the second character from the first character and return the result.
+
+From this exercise on, I will only explain the new instructions and concepts we use.
+
+#### `sub`
+
+```sub rax, rdi``` performs a substraction such as `rax` ← `rax` - `rdi`.
+
+#### `movzx`
+
+```movzx rax, BYTE[rdi + rcx]``` moves the byte at the address `rdi + rcx` to `rax`, and fills the remaining bits with 0.
+
+> movzx will adapt to the keyword used to specify the size of the data we want to move. For example, `movzx rax, WORD[rdi + rcx]` would move a word (16 bits) to `rax`.
+
+This instruction is useful to us as `rax` is a 64-bit register, and we only want to compare the characters as bytes (8 bits).
+
+#### `jz`
+
+```jz label``` jumps to `label` if the zero flag is set, a bit like `je` and `jne` but for the zero flag.
+
+For example, if we want to jump to `end` if one of `register1` or `register2` is 0, we can do:
+
+```nasm
+cmp register1, 0
+cmp register2, 0
+jz end
+```
+
+### Implementation
+
+In this implementation, **I will not show code like in the previous ones**, just describe the logic with more depth.
+
+My intermediates registers will be `rax` and `r8` (not the most efficient code but easier to understand).
+
+1. We set `rcx`, `rax` and `r8` to 0.
+2. We start our loop.
+3. We copy `rdi` and `rsi` to `rax` and `r8`.
+4. We check that the characters are not the null-terminator.
+5. We compare the characters.
+6. If they are different, we substract them and return.
+7. If not, we increment the counter and go back to the beginning of the loop.
+
+That's it! With all the precautions I mentioned and the new instructions, you should be able to implement the `ft_strcmp` function.
