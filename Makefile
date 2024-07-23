@@ -48,5 +48,6 @@ test: all
 	@$(CC) $(CFLAGS) $(NAME) main.c -o test
 	@echo "${GREEN}+ test${NC}"
 	@./test
+	@rm -f test
 
 .PHONY: all clean fclean re
