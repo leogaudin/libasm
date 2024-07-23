@@ -287,3 +287,63 @@ end:
 ```
 
 And that's it! We have implemented the `ft_strlen` function in assembly.
+
+## ft_strcpy
+
+The `ft_strcpy` function is a function that copies a string into another string, and returns a pointer to the destination string.
+
+The logic is very similar to the `ft_strlen` function:
+
+1. Set a counter to 0.
+2. Look at the first character of the source string.
+3. Copy it to the destination string.
+4. Increment the counter.
+5. Look at the next character and copy it.
+6. If it is not the null-terminator, increment the counter and go back to step 5.
+7. If it is the null-terminator, exit the loop and return a pointer to the destination string.
+
+### Implementation
+
+A pointer to our `dst` string is passed in `rdi`, and a pointer to our `src` string is passed in `rsi`.
+
+We can start the same way we did with `ft_strlen` by setting the counter to 0.
+
+```nasm
+ft_strcpy:
+	mov rcx, 0
+```
+
+We can then start our loop.
+
+We need to copy every character in `rsi` to `rdi`. However, **in assembly, we can't copy data directly from one address to another** (`mov [rdi], [rsi]` would not work).
+
+We therefore need to copy the data from the source address to a register, and then copy it to the destination address.
+
+> We could use any register to store the character (like `r8` as seen before), but it is more appropriate to use `al` for this purpose, as it is a register that is meant to store a single byte.
+
+```nasm
+loop:
+	mov al, [rsi + rcx]
+	mov [rdi + rcx], al
+	inc rcx
+	cmp al, 0
+	jne loop
+```
+
+In this loop:
+1. We copy the character in `rsi` to `al`.
+2. We copy `al` to `rdi`.
+3. We increment the counter.
+4. We check if the character is the null-terminator.
+5. If it is not, we go back to the beginning of the loop.
+
+Finally, we need to return the pointer to the destination string.
+
+Given that we received this pointer in `rdi` and that we did not move it, we can simply copy it to `rax` and return.
+
+```nasm
+mov rax, rdi
+ret
+```
+
+## ft_strcmp
