@@ -1,7 +1,21 @@
 <h1 align='center'>libasm</h1>
 
 *All the explanations in this file follow the System V AMD64 ABI calling convention.*
-*It is important to note that it will only work on a x86_64 architecture, therefore not on Apple Silicon (ARM64) for example.*
+
+### Apple Silicon
+
+Apple Silicon is based on ARM64 architecture. The assembly code in this repository is written for `x86_64` architecture.
+
+If you wish to use and test your assembly code seamlessly on those chips, you need to add the following lines to your Makefile:
+
+```makefile
+CC = gcc
+ifeq ($(shell uname -m), arm64)
+	CC += -ld_classic --target=x86_64-apple-darwin
+endif
+```
+
+> Don't forget the `-f macho64` flag after your `nasm` command when compiling on Macs.
 
 ## Prerequisites and basic concepts
 
