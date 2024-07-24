@@ -182,9 +182,33 @@ void	test_read(void)
 		printf(ref_errno == test_errno ? GREEN "ERRNO OK" NC : RED "ERRNO KO" NC);
 		printf("\tExpected: %d\tResult: %d\n\t", ref_errno, test_errno);
 		printf(strcmp(ref_buf, test_buf) == 0 ? GREEN "COPY OK" NC : RED "COPY KO" NC);
-		printf("\tExpected: %s\tResult: %s\n", ref_buf, test_buf);
+		printf("\t\tExpected: %s\tResult: %s\n", ref_buf, test_buf);
 	}
 	printf("\n");
+}
+
+void	test_strdup(void)
+{
+	printf(BOLD "\nTesting ft_strdup\n" NC);
+
+	char	*strings[] = {
+		"test",
+		"1",
+		"0",
+		"",
+		"\0",
+		"zzzz",
+	};
+
+	int	numStrings = sizeof(strings) / sizeof(strings[0]);
+
+	for (int i = 0; i < numStrings; i++) {
+		char	*ref_ptr = strdup(strings[i]);
+		char	*test_ptr = ft_strdup(strings[i]);
+
+		printf(strcmp(ref_ptr, test_ptr) == 0 ? GREEN "COPY OK" NC : RED "COPY KO" NC);
+		printf("\t\tExpected: %s\tResult: %s\n", ref_ptr, test_ptr);
+	}
 }
 
 int	main(void)
@@ -194,5 +218,6 @@ int	main(void)
 	test_strcmp();
 	test_write();
 	test_read();
+	test_strdup();
 	return (0);
 }

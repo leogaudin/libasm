@@ -49,10 +49,10 @@ Among the above registers for example:
 > This may seem like an inconvenience, but it is actually very useful to manipulate the behavior of the program.
 >
 > For instance, if we want to call `sys_write`:
-> 1. We put the syscall number (4 for `sys_write`) in `eax`.
-> 2. We put the file descriptor in `ebx`.
-> 3. We put the address of the buffer in `ecx`.
-> 4. We put the number of bytes to write in `edx`.
+> 1. We put the syscall number (4 for `sys_write`) in `rax`.
+> 2. We put the file descriptor in `rdi`.
+> 3. We put the address of the buffer in `rsi`.
+> 4. We put the number of bytes to write in `rdx`.
 > 5. We call the `syscall` instruction.
 
 The conclusion is: **the little boxes are very useful as intermediate storage for data, but we have to be careful not to overwrite them when we** (or the system) **need them.**
@@ -491,8 +491,102 @@ So we just replace `0x2000004` with `0x2000003` and we're good to go.
 
 Easy.
 
+## ft_strdup
+
+The `ft_strdup` function is a function that duplicates a string. It allocates memory for the new string, copies the string to it, and returns a pointer to the new string.
+
+Doesn't sound as easy as `ft_read`.
+
+Luckily, we can use the functions we implemented before, and the `malloc` function. But we also need to learn two new instructions.
+
+### `push` and `pop`
+
+We have another way to store data in assembly: the stack.
+
+The stack is literally a pile of data, organized in a LIFO (Last In, First Out) way.
+
+If I push `1`, `2` and `3` on the stack, it will look like:
+```
+3
+2
+1
+```
+
+If I pop the stack here, I will get `3`.
+
+In assembly, we can manipulate the stack as follows:
+
+```nasm
+push rax
+push rbx
+```
+
+This instruction will push the value of `rax`, then the value of `rbx` on the stack.
+
+```nasm
+value of rbx
+value of rax
+```
+
+We then have the `pop` command, that will take the last value pushed on the stack and put it in the operand we specify.
+
+```nasm
+pop any_register
+```
+
+After this instruction, `any_register` will contain the value of `rbx`.
+
+### Implementation
+
+```nasm
+_ft_strdup:
+; rdi contains the *s to duplicate
+	call	_ft_strlen
+; rax now contains strlen(*s)
+; rdi still contains the *s to duplicate
+	push	rdi	; We save *s in the stack
+	inc		rax
+	mov		rdi, rax ; We move strlen(*s) in rdi so that malloc can read it
+	call	_malloc
+; rax now contains a pointer to the newly-allocated space of length strlen(*s)
+	pop		rsi ; Put back the *s to duplicate, in rsi (second argument)
+	mov		rdi, rax ; Put the newly-allocated space in rdi (first argument)
+	call	_ft_strcpy
+; rax still contains a pointer to the now duplicate string
+	ret
+```
+
+In this implementation, we will use `push` and `pop` to save the values of our registers when calling other functions that manipulate them.
+
+Let's recap the steps of the function:
+1. Get the length of the string (`ft_strlen`).
+2. Allocate memory for the new string (`malloc`).
+3. Copy the string to the new string (`ft_strcpy`).
+
+We also know that:
+- When `ft_strdup` is called, **`rdi` contains `*s`** (the string to duplicate).
+- `ft_strlen` **reads a string in `rdi`** and **returns the length in `rax`**.
+- `malloc` **reads the size in `rdi`** and **returns a pointer** to the allocated memory **in `rax`**.
+- `ft_strcpy` **reads the source string in `rsi`** and **the destination string in `rdi`**.
+
+So:
+1. We don't need to touch `rdi` before calling `ft_strlen`.
+2. We call `ft_strlen`, that saves the length in `rax`.
+3. We push the `rdi` (that contains `*s`) to the stack, to use it later.
+4. We increment the length by 1 (for the null-terminator).
+5. We move the length of `*s` to `rdi` to call `malloc` with the right size.
+6. We call `malloc`, that returns a pointer to the allocated memory in `rax`.
+7. We pop the `*s` from the stack to `rsi` (second argument of `ft_strcpy`).
+8. We move the pointer to the allocated memory to `rdi` (first argument of `ft_strcpy`).
+9. We call `ft_strcpy`, that copies the string to the allocated memory.
+10. We can directly call `ret` as the pointer to the new string is already in `rax`.
+
+And that's it! We have implemented the last mandatory function of the project.
+
 # Resources
 
 - [x64 Cheat Sheet](https://cs.brown.edu/courses/cs033/docs/guides/x64_cheatsheet.pdf)
 - [Le langage assembleur intel 64 bits](https://www.lacl.fr/tan/asm)
 - [___error on Mac vs __errno_location on Linux](https://github.com/cacharle/libasm_test/issues/2)
+- [Assembly File Management](https://www.tutorialspoint.com/assembly_programming/pdf/assembly_file_management.pdf)
+- [The Stack: Push and Pop](https://www.cs.uaf.edu/2015/fall/cs301/lecture/09_16_stack.html)
