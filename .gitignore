@@ -6,3 +6,4 @@
 *.a
 *.txt
 .DS_Store
+libasm_test-master/
