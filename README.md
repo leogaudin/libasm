@@ -49,10 +49,10 @@ Among the above registers for example:
 > This may seem like an inconvenience, but it is actually very useful to manipulate the behavior of the program.
 >
 > For instance, if we want to call `sys_write`:
-> 1. We put the syscall number (1 for `sys_write`) in `rax`.
-> 2. We put the file descriptor in `rdi`.
-> 3. We put the address of the buffer in `rsi`.
-> 4. We put the number of bytes to write in `rdx`.
+> 1. We put the syscall number (4 for `sys_write`) in `eax`.
+> 2. We put the file descriptor in `ebx`.
+> 3. We put the address of the buffer in `ecx`.
+> 4. We put the number of bytes to write in `edx`.
 > 5. We call the `syscall` instruction.
 
 The conclusion is: **the little boxes are very useful as intermediate storage for data, but we have to be careful not to overwrite them when we** (or the system) **need them.**
@@ -136,12 +136,12 @@ cmp [rax + 3], 0
 
 In order to use the functions we write in assembly in a C program, we need to export them.
 
-To do so, we can use the `.global` directive.
+To do so, we can use the `global` directive.
 
 For example, if we want to export the function `ft_strlen`, we can do:
 
 ```nasm
-.global ft_strlen
+global ft_strlen
 
 ft_strlen:
 	...
@@ -400,3 +400,87 @@ My intermediates registers will be `rax` and `r8` (not the most efficient code b
 7. If not, we increment the counter and go back to the beginning of the loop.
 
 That's it! With all the precautions I mentioned and the new instructions, you should be able to implement the `ft_strcmp` function.
+
+## ft_write
+
+The `ft_write` function is a function that, provided a file descriptor, a buffer and a size, writes the buffer to the file descriptor. It returns the number of bytes written, or -1 if an error occurred.
+
+To implement this function, we need to know how to make a syscall.
+
+### Syscalls
+
+As we saw in the introduction, to make a syscall, we need to:
+1. Put the syscall number in `rax`.
+2. Put its arguments in the appropriate registers (here `rdi`, `rsi` and `rdx`).
+3. Trigger the syscall with the `syscall` instruction, that will read the values in the registers and behave accordingly.
+
+### First steps
+
+In our case, the parameters we receive from C are already in the right registers, so we can save the following instructions:
+```nasm
+mov rdi, rdi ; file descriptor
+mov rsi, rsi ; buffer
+mov rdx, rdx ; count
+```
+
+We can then put the syscall number in `rax` and call the syscall.
+
+On Apple Silicon Macs, the syscall number for `sys_write` is `0x2000004`. On Linux, it is `1`.
+
+```nasm
+mov rax, 0x2000004
+; mov rdi, rdi
+; mov rsi, rsi
+; mov rdx, rdx
+syscall
+ret
+```
+
+We could stop here, as the function would properly write to the file descriptor and return the number of bytes written (the syscall putting its return value in `rax`).
+
+However, **we need to return `-1` if an error occurred, and set the `errno` variable accordingly**, as asked in the subject.
+
+To handle any error and jump to another label, we can use the `jc` instruction. This will **jump to the label if the Carry Flag is set**, which is generally the case when an error occurs.
+
+```nasm
+jc error
+```
+
+#### `errno`
+
+`errno` is a variable that is set when an error occurs. It is a global variable that is set by the system when a syscall fails.
+
+However, **it is not automatically translated to the `errno` variable in C**. We need to set it ourselves.
+
+To do so, we are provided with `__errno_location` (or `___error` on Mac). This function returns a pointer to the `errno` variable.
+
+We can call it with the instruction `call __errno_location`. As for other instructions, it will put the return value in `rax`.
+
+However, **`rax` already contains the return value of the `write` syscall**. We need to **save it** before calling `__errno_location`.
+
+```nasm
+error:
+	mov r8, rax
+	call __errno_location
+```
+
+We now have the address of the `errno` variable in `rax`. We can put the previously saved error code in it by dereferencing the address.
+
+```nasm
+mov [rax], r8
+```
+
+Finally, we can return `-1` and exit the function.
+
+```nasm
+mov rax, -1
+ret
+```
+
+And that's it! We have implemented the `ft_write` function.
+
+# Resources
+
+- [x64 Cheat Sheet](https://cs.brown.edu/courses/cs033/docs/guides/x64_cheatsheet.pdf)
+- [Le langage assembleur intel 64 bits](https://www.lacl.fr/tan/asm)
+- [___error on Mac vs __errno_location on Linux](https://github.com/cacharle/libasm_test/issues/2)
