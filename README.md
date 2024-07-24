@@ -479,6 +479,18 @@ ret
 
 And that's it! We have implemented the `ft_write` function.
 
+## ft_read
+
+The `ft_read` function is a function that, provided a file descriptor, a buffer and a size, reads from the file descriptor to the buffer. It returns the number of bytes read, or -1 if an error occurred.
+
+It's literally implementing the `ft_write` function but with the `sys_read` syscall.
+
+Same logic, same instructions, same everything.
+
+So we just replace `0x2000004` with `0x2000003` and we're good to go.
+
+Easy.
+
 # Resources
 
 - [x64 Cheat Sheet](https://cs.brown.edu/courses/cs033/docs/guides/x64_cheatsheet.pdf)
