@@ -2,7 +2,26 @@
 
 *All the explanations in this file follow the System V AMD64 ABI calling convention.*
 
-### Apple Silicon
+## Table of Contents
+
+- [Apple Silicon](#apple-silicon) 
+- [Prerequisites and basic concepts](#prerequisites-and-basic-concepts) 📚
+	- [Registers](#registers) 📦
+	- [Execution flow](#execution-flow) ⏩
+	- [Syntax](#syntax) 💻
+		- [Instructions](#instructions) 🤖
+		- [Behavior](#behavior) 🔄
+		- [Addresses and values](#addresses-and-values) 📍
+		- [Exporting symbols](#exporting-symbols) 📤
+- [ft_strlen](#ft_strlen)
+- [ft_strcpy](#ft_strcpy)
+- [ft_strcmp](#ft_strcmp)
+- [ft_write](#ft_write)
+- [ft_read](#ft_read)
+- [ft_strdup](#ft_strdup)
+- [Resources](#resources) 📖
+
+## Apple Silicon
 
 Apple Silicon is based on ARM64 architecture. The assembly code in this repository is written for `x86_64` architecture.
 
@@ -19,9 +38,9 @@ Instead of rewriting all the assembly code for ARM64 architecture, we basically 
 
 > Don't forget the `-f macho64` flag after your `nasm` command when compiling on Macs.
 
-## Prerequisites and basic concepts
+# Prerequisites and basic concepts
 
-### Registers
+## Registers
 
 Assembly works mainly with registers. They can be compared to little pre-defined boxes that can store data.
 
@@ -57,7 +76,7 @@ Among the above registers for example:
 
 The conclusion is: **the little boxes are very useful as intermediate storage for data, but we have to be careful not to overwrite them when we** (or the system) **need them.**
 
-### Execution flow
+## Execution flow
 
 Assembly is read **from top to bottom**.
 
@@ -84,11 +103,11 @@ In this example, `entry_point` is the entry point of the program/function.
 
 `do_something` and `do_something_else` will be executed one after the other, even without a "jump" instruction.
 
-### Syntax
+## Syntax
 
 > The syntax used in this repository is the Intel syntax. It is the most common syntax used in assembly programming, and a requisite of the subject. It is characterized by the fact that the destination operand is on the left and the source operand is on the right.
 
-#### Instructions
+## Instructions
 
 Virtually **all the lines in assembly are** composed of an **instruction followed by its operand(s)**.
 
@@ -103,7 +122,7 @@ A few examples:
 
 - `jmp do_something` jumps to the label `do_something`.
 
-#### Behavior
+## Behavior
 
 It is very important to remember that every instruction can alter the behavior of the program implicitly.
 
@@ -112,7 +131,7 @@ For example:
 - The `cmp` instruction will set the flags register according to the result of the comparison.
 - The `loop` instruction will decrement the `rcx` register and jump to the label if `rcx` is not zero.
 
-#### Addresses and values
+## Addresses and values
 
 Like in C, we can work with addresses.
 
@@ -132,7 +151,7 @@ cmp [rax + 3], 0
 
 > Here we should technically use an identifier for the address (`BYTE`, `WORD`, `DWORD`, `QWORD`) to specify the size of the data we want to compare, but we ignored it for the sake of this explanation.
 
-#### Exporting symbols
+## Exporting symbols
 
 In order to use the functions we write in assembly in a C program, we need to export them.
 
@@ -147,7 +166,7 @@ ft_strlen:
 	...
 ```
 
-## ft_strlen
+# ft_strlen
 
 The `ft_strlen` function is a function that returns the length of a string. It is a very simple function that iterates over the string until it finds the null-terminator (`\0`).
 
@@ -167,7 +186,7 @@ To replicate this behavior in assembly, we will need to learn a few instructions
 - `inc` to increment a register.
 - `ret` to return from the function.
 
-#### `mov`
+### `mov`
 
 ```nasm
 mov rax, rdi
@@ -175,7 +194,7 @@ mov rax, rdi
 
 This instruction copies the value in `rdi` to `rax`.
 
-#### `jmp`
+### `jmp`
 
 ```nasm
 entry_point:
@@ -192,7 +211,7 @@ The first line of `entry_point` will jump to the label `some_other_label` (and s
 
 Jumps work like a `goto` in C. They can be used to skip parts of the code, or to create loops (as they can jump to a label that is located earlier in the code).
 
-#### `cmp`
+### `cmp`
 
 ```nasm
 cmp rax, rdi
@@ -209,7 +228,7 @@ je equal
 
 Which leads us to the next instruction.
 
-#### `je`
+### `je`
 
 ```nasm
 cmp some_register, some_other_register
@@ -218,7 +237,7 @@ je equal
 
 This instruction will jump to the label `equal` only if the two registers are equal.
 
-#### `inc`
+### `inc`
 
 ```nasm
 inc rax
@@ -226,7 +245,7 @@ inc rax
 
 This instruction increments the value in `rax` by `1`. Simple.
 
-#### `ret`
+### `ret`
 
 ```nasm
 ret
@@ -236,7 +255,7 @@ This instruction returns from the program/function.
 
 > Remember that in the System V AMD64 ABI, the return value of a function is stored in the `rax` register. Whatever is in `rax` when we call `ret` instruction will be the return value of the program/function.
 
-### Implementation
+## Implementation
 
 Now that we know the instructions we need, we can implement the `ft_strlen` function.
 
@@ -290,7 +309,7 @@ end:
 
 And that's it! We have implemented the `ft_strlen` function in assembly.
 
-## ft_strcpy
+# ft_strcpy
 
 The `ft_strcpy` function is a function that copies a string into another string, and returns a pointer to the destination string.
 
@@ -304,7 +323,7 @@ The logic is very similar to the `ft_strlen` function:
 6. If it is not the null-terminator, increment the counter and go back to step 5.
 7. If it is the null-terminator, exit the loop and return a pointer to the destination string.
 
-### Implementation
+## Implementation
 
 A pointer to our `dst` string is passed in `rdi`, and a pointer to our `src` string is passed in `rsi`.
 
@@ -348,7 +367,7 @@ mov rax, rdi
 ret
 ```
 
-## ft_strcmp
+# ft_strcmp
 
 The `ft_strcmp` function is a function that compares two strings, and returns the difference between the first two different characters. For example, "abc" and "abd" would return -1, as 'c' - 'd' = -1.
 
@@ -361,11 +380,11 @@ Let's recap the behavior of the function anyway:
 
 From this exercise on, I will only explain the new instructions and concepts we use.
 
-#### `sub`
+### `sub`
 
 ```sub rax, rdi``` performs a substraction such as `rax` ← `rax` - `rdi`.
 
-#### `movzx`
+### `movzx`
 
 ```movzx rax, BYTE[rdi + rcx]``` moves the byte at the address `rdi + rcx` to `rax`, and fills the remaining bits with 0.
 
@@ -373,7 +392,7 @@ From this exercise on, I will only explain the new instructions and concepts we 
 
 This instruction is useful to us as `rax` is a 64-bit register, and we only want to compare the characters as bytes (8 bits).
 
-#### `jz`
+### `jz`
 
 ```jz label``` jumps to `label` if the zero flag is set, a bit like `je` and `jne` but for the zero flag.
 
@@ -385,9 +404,9 @@ cmp register2, 0
 jz end
 ```
 
-### Implementation
+## Implementation
 
-In this implementation, **I will not show code like in the previous ones**, just describe the logic with more depth.
+**I will not show code like in the previous ones**, just describe the logic with more depth.
 
 My intermediates registers will be `rax` and `r8` (not the most efficient code but easier to understand).
 
@@ -401,20 +420,20 @@ My intermediates registers will be `rax` and `r8` (not the most efficient code b
 
 That's it! With all the precautions I mentioned and the new instructions, you should be able to implement the `ft_strcmp` function.
 
-## ft_write
+# ft_write
 
 The `ft_write` function is a function that, provided a file descriptor, a buffer and a size, writes the buffer to the file descriptor. It returns the number of bytes written, or -1 if an error occurred.
 
 To implement this function, we need to know how to make a syscall.
 
-### Syscalls
+## Syscalls
 
 As we saw in the introduction, to make a syscall, we need to:
 1. Put the syscall number in `rax`.
 2. Put its arguments in the appropriate registers (here `rdi`, `rsi` and `rdx`).
 3. Trigger the syscall with the `syscall` instruction, that will read the values in the registers and behave accordingly.
 
-### First steps
+## First steps
 
 In our case, the parameters we receive from C are already in the right registers, so we can save the following instructions:
 ```nasm
@@ -446,7 +465,7 @@ To handle any error and jump to another label, we can use the `jc` instruction. 
 jc error
 ```
 
-#### `errno`
+### `errno`
 
 `errno` is a variable that is set when an error occurs. It is a global variable that is set by the system when a syscall fails.
 
@@ -479,7 +498,7 @@ ret
 
 And that's it! We have implemented the `ft_write` function.
 
-## ft_read
+# ft_read
 
 The `ft_read` function is a function that, provided a file descriptor, a buffer and a size, reads from the file descriptor to the buffer. It returns the number of bytes read, or -1 if an error occurred.
 
@@ -491,7 +510,7 @@ So we just replace `0x2000004` with `0x2000003` and we're good to go.
 
 Easy.
 
-## ft_strdup
+# ft_strdup
 
 The `ft_strdup` function is a function that duplicates a string. It allocates memory for the new string, copies the string to it, and returns a pointer to the new string.
 
@@ -536,25 +555,7 @@ pop any_register
 
 After this instruction, `any_register` will contain the value of `rbx`.
 
-### Implementation
-
-```nasm
-_ft_strdup:
-; rdi contains the *s to duplicate
-	call	_ft_strlen
-; rax now contains strlen(*s)
-; rdi still contains the *s to duplicate
-	push	rdi	; We save *s in the stack
-	inc		rax
-	mov		rdi, rax ; We move strlen(*s) in rdi so that malloc can read it
-	call	_malloc
-; rax now contains a pointer to the newly-allocated space of length strlen(*s)
-	pop		rsi ; Put back the *s to duplicate, in rsi (second argument)
-	mov		rdi, rax ; Put the newly-allocated space in rdi (first argument)
-	call	_ft_strcpy
-; rax still contains a pointer to the now duplicate string
-	ret
-```
+## Implementation
 
 In this implementation, we will use `push` and `pop` to save the values of our registers when calling other functions that manipulate them.
 
