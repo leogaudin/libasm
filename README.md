@@ -584,6 +584,15 @@ So:
 
 And that's it! We have implemented the last mandatory function of the project.
 
+## Changes to make on Linux
+
+- The syscall number for `sys_write` is `1` on Linux.
+- The syscall number for `sys_read` is `0` on Linux.
+- The `___error` function is named `__errno_location` on Linux.
+- The symbols don't need to be prefixed with an underscore on Linux.
+- The Carry Flag is not set when an error occurs on Linux. We need to check if `rax` is negative to detect an error.
+- The nasm flag `-f elf64` should be used instead of `-f macho64`.
+
 # Resources
 
 - [x64 Cheat Sheet](https://cs.brown.edu/courses/cs033/docs/guides/x64_cheatsheet.pdf)
