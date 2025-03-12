@@ -1,6 +1,8 @@
-<h1 align='center'>libasm</h1>
-
-*All the explanations in this file follow the System V AMD64 ABI calling convention.*
+<div align='center'>
+	<h1>libasm</h1>
+	<p><i>All the explanations in this file follow the System V AMD64 ABI calling convention.</i></p>
+	<img src="https://img.shields.io/badge/-100%2F100-success?logo=42&logoColor=fff" />
+</div>
 
 ## Table of Contents
 
